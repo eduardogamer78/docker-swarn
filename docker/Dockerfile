@@ -45,8 +45,8 @@ RUN cd $APP_DIR
 RUN chown www-data:www-data $APP_DIR
 
 COPY --chown=www-data:www-data ./app .
-RUN rm -rf vendor
-RUN composer install --no-interaction
+#RUN rm -rf vendor
+#RUN composer install --no-interaction
 
 RUN echo 'date.timezone="America/Sao_Paulo"' >> /usr/local/etc/php/conf.d/date.ini \
     && echo 'opcache.enable=1' >> /usr/local/etc/php/conf.d/opcache.conf \

@@ -11,24 +11,22 @@ services:
     # volumes:
     #   - ./app:/var/www/app
     ports:
-      - "82:82" #http
+      - "${PM_PORT}:80" #http
     networks:
       - net_local
-    depends_on:
-      - mariadb
   
   mariadb:
       image: mariadb
       volumes:
         - ./sail-mariadb:/var/lib/mysql
       ports:
-        - "3307:3307"
+        - "${DB_PORT}:3306"
       environment:
-        - MYSQL_DATABASE=default
-        - MYSQL_USER=root
-        - MYSQL_PASSWORD=run/secrets/MYSQL_PASSWORD
-        - MYSQL_ROOT_PASSWORD=run/secrets/MYSQL_ROOT_PASSWORD
-        - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+        MYSQL_ROOT_PASSWORD: '${DB_ROOT_PASSWORD}'
+        MYSQL_ROOT_HOST: '%'
+        MYSQL_DATABASE: '${DB_DATABASE}'
+        MYSQL_USER: '${DB_USERNAME}'
+        MYSQL_PASSWORD: '${DB_PASSWORD}'
       networks:
         - net_local
       healthcheck:
@@ -38,27 +36,16 @@ services:
   
   phpmyadmin:
       image: phpmyadmin
-      environment:
-        - PMA_ARBITRARY=1
-        - MYSQL_USER=root
-        - MYSQL_PASSWORD=run/secrets/MYSQL_PASSWORD
-        - MYSQL_ROOT_PASSWORD=run/secrets/MYSQL_ROOT_PASSWORD
       ports:
-        - "8081:80" #http
+        - "${PMA_PORT}:80" #http
       depends_on:
-        - mariadb
+        - "${DB_HOST}"
       networks:
         - net_local
 
-secrets:
-  mysql_root_password:
-    external: true
-  mysql_password:
-    external: true
-
 networks:
     net_local:
-     driver: bridge
+        driver: bridge
 volumes:
     sail-mariadb:
-     driver: local
+        driver: local
