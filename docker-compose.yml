@@ -1,6 +1,8 @@
 version: "3.9"
 services:
   web:
+    image: urnau/app1-php:prod-nginx-php-fpm8.2.3
+    container_name: web
     build:
       context: .
       dockerfile: ./docker/Dockerfile
@@ -9,9 +11,7 @@ services:
     # volumes:
     #   - ./app:/var/www/app
     ports:
-      - "${PM_PORT}:80" #http
-    networks:
-      - net_local
+      - "80:80" #http
   
   mariadb:
       build:
