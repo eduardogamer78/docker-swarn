@@ -16,29 +16,36 @@ services:
       - mariadb
   
   mariadb:
-      image: mariadb
-      volumes:
-        - ${DATA_PATH_HOST}/mariadb:/var/lib/mysql
+      build:
+        context: ./mariadb
+        args:
+          - http_proxy
+          - https_proxy
+          - no_proxy
+          - MARIADB_VERSION=${MARIADB_VERSION}
       ports:
-        - "${DB_PORT}:3306"
+        - ${MARIAB_PORT}:3306"
       environment:
-        MYSQL_ROOT_PASSWORD: '${DB_ROOT_PASSWORD}'
-        MYSQL_DATABASE: '${DB_DATABASE}'
-        MYSQL_USER: '${DB_USERNAME}'
-        MYSQL_PASSWORD: '${DB_PASSWORD}'
+        - TZ=${WORKSPACE_TIMEZONE}
+        - MYSQL_DATABASE=${MARIADB_DATABASE}
+        - MYSQL_USER=${MARIADB_USER}
+        - MYSQL_PASSWORD=${MARIADB_PASSWORD}
+        - MYSQL_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD}
       networks:
         - net_local
-      healthcheck:
-          test: ["CMD", "mysqladmin", "ping"]
-          retries: 3
-          timeout: 5s
   
   phpmyadmin:
-      image: phpmyadmin
-      ports:
-        - "${PMA_PORT}:80" #http
+      build: ./phpmyadmin
       environment:
         - PMA_ARBITRARY=1
+        - MYSQL_USER=${PMA_USER}
+        - MYSQL_PASSWORD=${PMA_PASSWORD}
+        - MYSQL_ROOT_PASSWORD=${PMA_ROOT_PASSWORD}
+        - MAX_EXECUTION_TIME=${PMA_MAX_EXECUTION_TIME}
+        - MEMORY_LIMIT=${PMA_MEMORY_LIMIT}
+        - UPLOAD_LIMIT=${PMA_UPLOAD_LIMIT}
+      ports:
+        - "${PMA_PORT}:80"
       depends_on:
         - "${PMA_DB_ENGINE}"
       networks:
