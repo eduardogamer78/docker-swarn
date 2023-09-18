@@ -29,7 +29,7 @@ RUN docker-php-ext-install mysqli pdo pdo_mysql pdo_pgsql pgsql session xml
 RUN pecl install redis-${REDIS_LIB_VERSION} \
     && docker-php-ext-enable redis 
 
-RUN docker-php-ext-install iconv simplexml pcntl gd bcmath mbstring exif sockets
+RUN docker-php-ext-install iconv simplexml pcntl gd
 
 # Composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
