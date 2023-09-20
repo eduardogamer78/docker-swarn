@@ -1,59 +1,46 @@
 version: "3.9"
 services:
   web:
-    image: urnau/app1-php:prod-nginx-php-fpm8.2.3
     container_name: web
     build:
       context: .
       dockerfile: ./docker/Dockerfile
       args:
         PHP_VERSION: '8.2.4-fpm-bullseye'
-    # volumes:
-    #   - ./app:/var/www/app
+    #volumes:
+     # - ./app:/var/www/app
     ports:
       - "80:80" #http
   
-  mariadb:
-      build:
-        context: ./mariadb
-        args:
-          - http_proxy
-          - https_proxy
-          - no_proxy
-          - MARIADB_VERSION=${MARIADB_VERSION}
-      volumes:
-        - ${DATA_PATH_HOST}/mariadb:/var/lib/mysql
-      ports:
-        - "${MARIADB_PORT}:3306"
-      environment:
-        - TZ=${WORKSPACE_TIMEZONE}
-        - MYSQL_DATABASE=${MARIADB_DATABASE}
-        - MYSQL_USER=${MARIADB_USER}
-        - MYSQL_PASSWORD=${MARIADB_PASSWORD}
-        - MYSQL_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD}
-      networks:
-        - net_local
-  
-  phpmyadmin:
-      build: ./phpmyadmin
-      environment:
-        - PMA_ARBITRARY=1
-        - MYSQL_USER=${PMA_USER}
-        - MYSQL_PASSWORD=${PMA_PASSWORD}
-        - MYSQL_ROOT_PASSWORD=${PMA_ROOT_PASSWORD}
-        - MAX_EXECUTION_TIME=${PMA_MAX_EXECUTION_TIME}
-        - MEMORY_LIMIT=${PMA_MEMORY_LIMIT}
-        - UPLOAD_LIMIT=${PMA_UPLOAD_LIMIT}
-      ports:
-        - "${PMA_PORT}:80"
-      depends_on:
-        - "${PMA_DB_ENGINE}"
-      networks:
-        - net_local
-
-networks:
-    net_local:
-      driver: ${NETWORKS_DRIVER}
+  db:
+    image: mariadb:10.5.9
+    restart: always
+    ports:
+      - '3306:3306'
+    environment:
+      MYSQL_ROOT_PASSWORD: '${DB_PASSWORD}'
+      MYSQL_USER: '${DB_USERNAME}'
+      MYSQL_PASSWORD: '${DB_PASSWORD}'
+      MYSQL_DATABASE: '${DB_DATABASE}'
+    volumes:
+      - db_data:/var/lib/mysql
+    healthcheck:
+      test: mysqladmin ping '-p${DB_PASSWORD}'
+      interval: 5s
+      retries: 5
+  db_admin:
+    image: phpmyadmin
+    ports:
+      - '8081:80'
+    environment:
+      - PMA_HOST=db
+      - PMA_ABSOLUTE_URI=http://localhost:8001/
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - db_admin_data:/var/www/html
+    
 volumes:
-    mariadb:
-      driver: ${VOLUMES_DRIVER}
+  db_data:
+  db_admin_data:
