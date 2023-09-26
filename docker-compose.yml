@@ -1,14 +1,18 @@
 version: "3.9"
 services:
-  web:
-    container_name: web
+  php:
+    container_name: php
     build:
-      context: .
-      dockerfile: ./docker/Dockerfile
+      context: ./
+      dockerfile: Dockerfile
       args:
-        PHP_VERSION: '8.2.4-fpm-bullseye'
-    #volumes:
-     # - ./app:/var/www/app
+        PHP_VERSION: '8.2.10-zts-bullseye'
+    image: ml-prod
+    volumes:
+      - ./public:/var/www/app/public
+      - ./docker/supervisord:/etc/supervisor/conf.d/
+      - ./docker/php/extra-php.ini:/usr/local/etc/php/conf.d/99_extra.ini
+      # - ./docker/php/extra-php.ini.semjit:/usr/local/etc/php/conf.d/99_extra.ini
     ports:
       - "80:80" #http
   
@@ -40,7 +44,6 @@ services:
         condition: service_healthy
     volumes:
       - db_admin_data:/var/www/html
-    
 volumes:
   db_data:
   db_admin_data:
